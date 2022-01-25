@@ -17,3 +17,6 @@ Start-Service -Name "WinRM"
 if (-not (Get-PSSessionConfiguration) -or (-not (Get-ChildItem WSMan:\localhost\Listener))) {
     Enable-PSRemoting -SkipNetworkProfileCheck -Force
 }
+
+Write-Output "created new user: $ansibleUsername"
+Write-Output ""

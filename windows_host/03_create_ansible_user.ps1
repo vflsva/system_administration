@@ -47,3 +47,6 @@ $params = @{
 	Force = $true
 }
 New-Item @params
+
+Write-Output "created new user: $ansibleUsername"
+Write-Output ""

@@ -27,3 +27,7 @@ export OPENSSL_CONF=openssl.conf
     -subj "/CN=$WINUSERNAME" \
     -extensions \
     v3_req_client
+
+echo "certs created"
+echo "remember to copy to windows host"
+echo ""
