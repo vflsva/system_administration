@@ -1,0 +1,6 @@
+# ignore openssl config
+*.config
+
+# ignore certs
+certs/*
+*.pem
