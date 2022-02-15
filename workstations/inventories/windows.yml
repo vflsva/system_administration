@@ -1,0 +1,19 @@
+windows:
+  hosts:
+    VFL-WIN-01:
+      ansible_host: 192.168.250.62
+    VFL-WIN-02:
+      ansible_host: 192.168.250.61
+    VFL-WIN-03:
+      ansible_host: 192.168.250.74
+    VFL-WIN-04:
+      ansible_host: 192.168.250.73
+  vars:
+    ansible_user: ansible
+    ansible_connection: winrm
+    ansible_port: 5986
+    ansible_winrm_scheme: https
+    ansible_winrm_transport: certificate
+    ansible_winrm_server_cert_validation: ignore
+    ansible_winrm_cert_pem: /Users/generic_error/Documents/vfl/sys_admin/workstation_management/certs/ansible_cert.pem
+    ansible_winrm_cert_key_pem: /Users/generic_error/Documents/vfl/sys_admin/workstation_management/certs/ansible_cert_key.pem

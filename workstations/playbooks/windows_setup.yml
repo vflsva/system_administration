@@ -1,0 +1,133 @@
+# -----> CREATE USERS <----- #
+
+
+- name: Create users
+  hosts: windows
+  remote_user: ansible
+
+  tasks:
+
+  - name: Create local group to contain new users
+    ansible.windows.win_group:
+      name: LocalGroup
+      description: Group for VFL Staff and Students accounts
+      state: present
+
+  - name: Create local users
+    ansible.windows.win_user:
+      name: '{{ item.name }}'
+      password: '{{ item.password }}'
+      state: present
+      groups:
+        - LocalGroup
+        - Users
+      update_password: always
+      user_cannot_change_password: no
+      password_never_expires: yes
+    loop:
+    - name: Staff
+      password: "{{ lookup('env', 'STAFF_PW') }}"
+    - name: Student
+      password: "{{ lookup('env', 'STUDENT_PW') }}"
+
+
+# -----> CHECK GROUPS <----- #
+
+
+- name: Make sure LocalGroup only has Staff and Students
+  hosts: windows
+  remote_user: ansible
+
+  tasks:
+
+  - name: Ensure only a domain user exists in a local group
+    ansible.windows.win_group_membership:
+      name: LocalGroup
+      members:
+        - Staff
+        - Student
+      state: pure
+
+
+# -----> USER RIGHTS AND PERMISSIONS <----- #
+
+
+- name: Set user rights and permissions
+  hosts: windows
+  remote_user: ansible
+
+  tasks: 
+
+  - name: Make sure ansible user has network access
+    ansible.windows.win_user_right:
+      name: SeNetworkLogonRight
+      users:
+        - ansible
+      action: set
+
+  - name: Remove access to this computer from the network
+    ansible.windows.win_user_right:
+      name: SeNetworkLogonRight
+      users:
+        - LocalGroup
+        - Guest
+      action: remove
+
+  - name: Deny access to this computer from the network
+    ansible.windows.win_user_right:
+      name: SeDenyNetworkLogonRight
+      users:
+        - LocalGroup
+        - Guest
+      action: set
+
+  - name: Deny log on as a batch job
+    ansible.windows.win_user_right:
+      name: SeDenyBatchLogonRight
+      users:
+        - LocalGroup
+        - Guest
+      action: set
+
+  - name: Deny log on through Terminal Services
+    ansible.windows.win_user_right:
+      name: SeDenyRemoteInteractiveLogonRight
+      users:
+        - LocalGroup
+        - Guest
+      action: set
+
+  - name: Perform volume maintenance tasks
+    ansible.windows.win_user_right:
+      name: SeManageVolumePrivilege
+      users:
+        - LocalGroup
+        - Guest
+      action: remove
+
+  - name: Deny log on locally
+    ansible.windows.win_user_right:
+      name: SeDenyInteractiveLogonRight
+      users:
+        - ansible
+        - Guest
+      action: set
+
+
+# -----> SET HOSTNAME <----- #
+
+
+- name: Set hostname for all computers
+  hosts: windows
+  remote_user: ansible
+
+  tasks:
+
+  - name: Change computer hostname
+    ansible.windows.win_hostname:
+      name: '{{ inventory_hostname }}'
+    register: res
+
+  - name: Reboot
+    ansible.windows.win_reboot:
+    when: res.reboot_required
